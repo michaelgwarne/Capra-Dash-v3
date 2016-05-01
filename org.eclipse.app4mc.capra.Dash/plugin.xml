@@ -17,5 +17,12 @@
          </attribute>
          <persistent value="true"/>
    </extension>
+   <extension
+         point="org.eclipse.ui.ide.markerResolution">
+      <markerResolutionGenerator
+      		markerType="org.eclipse.app4mc.capra.Dash.mytracemarker"
+            class="org.eclipse.app4mc.capra.dash.MarkerResolutionGenerator">
+      </markerResolutionGenerator>
+   </extension>
 
 </plugin>

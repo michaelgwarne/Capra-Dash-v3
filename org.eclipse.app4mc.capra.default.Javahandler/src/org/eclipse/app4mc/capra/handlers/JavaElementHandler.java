@@ -25,7 +25,12 @@ public class JavaElementHandler implements ArtifactHandler {
 		IJavaElement cu = (IJavaElement) selection;
 		ArtifactWrapper wrapper = ArtifactsFactory.eINSTANCE.createArtifactWrapper();
 		wrapper.setName(cu.getElementName());
-		wrapper.setUri(cu.getHandleIdentifier());
+		String s = cu.getHandleIdentifier().replace("<{", "/");
+		s = s.substring(1);
+		s = s.replace("<", "/");
+		s = s.replace("{", "/");
+		s = "/" + s;
+		wrapper.setUri(s);
 		wrapper.setArtifactHandler(this.getClass().getName());
 		
 		return ArtifactHelper.existingWrapperWithURIorNew(wrapper, existingWrappers);

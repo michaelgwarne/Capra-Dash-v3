@@ -28,12 +28,25 @@ import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
 
+/**
+ * 
+ * @author Michael Warne
+ * 
+ *
+ */
+
 public class ResourceListener implements IResourceChangeListener{
 
 	final static int ARTIFACT_RENAMED = 0;
 	final static int ARTIFACT_MOVED = 1;
 	final static int ARTIFACT_DELETED = 2;
-
+	
+	private URI uri;
+	private TracePersistenceAdapter tracePersistenceAdapter;
+	private ResourceSet resourceSet;
+	private Optional<EObject> tracemodel;
+	private Optional<ArtifactWrapperContainer> awc;
+	
 	@Override
 	public void resourceChanged(IResourceChangeEvent event) {
 
@@ -45,8 +58,6 @@ public class ResourceListener implements IResourceChangeListener{
 			public boolean visit(IResourceDelta delta) throws CoreException {
 
 				IPath toPath = delta.getMovedToPath();
-				
-
 				
 				if(delta.getKind() == IResourceDelta.REMOVED && toPath!=null) {
 
@@ -70,24 +81,27 @@ public class ResourceListener implements IResourceChangeListener{
 
 	public void markupJob(IResourceDelta delta, int issueType){
 
-
 		WorkspaceJob job = new WorkspaceJob("myJob") {
 			@Override
 			public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
 				try {
-					ResourceSet resourceSet = new ResourceSetImpl();
-					TracePersistenceAdapter tracePersistenceAdapter = ExtensionPointHelper.getTracePersistenceAdapter().get();
-					Optional<ArtifactWrapperContainer> awc = tracePersistenceAdapter.getArtifactWrappers(resourceSet);
-					Optional<EObject> tracemodel = tracePersistenceAdapter.getTraceModel(resourceSet);
+					resourceSet = new ResourceSetImpl();
+					tracePersistenceAdapter = ExtensionPointHelper.getTracePersistenceAdapter().get();
+					tracemodel = tracePersistenceAdapter.getTraceModel(resourceSet);
+					awc = tracePersistenceAdapter.getArtifactWrappers(resourceSet);
+					if(! tracemodel.isPresent() || ! awc.isPresent()) return Status.OK_STATUS;
+				 	
+					
+					
 					TraceMetamodelAdapter tracemetamodeladapter = ExtensionPointHelper.getTraceMetamodelAdapter().get();
-
-					URI uri = EcoreUtil.getURI(tracemodel.get());
+					uri = EcoreUtil.getURI(tracemodel.get());
+					
 					IPath path = new Path(uri.toPlatformString(false));
 					IFile file = ResourcesPlugin.getWorkspace().getRoot().getFile(path);
 					EList<ArtifactWrapper> list = awc.get().getArtifacts();
 					for (ArtifactWrapper aw : list) {
 					
-						if(aw.getName().equalsIgnoreCase(delta.getResource().getName())){
+						if(aw.getName().equals(delta.getResource().getName())){
 
 							if (tracemetamodeladapter.getConnectedElements(aw, tracemodel).size() > 0) {
 								IMarker marker = file.createMarker("org.eclipse.app4mc.capra.Dash.mytracemarker");
@@ -95,16 +109,25 @@ public class ResourceListener implements IResourceChangeListener{
 								if(issueType == ARTIFACT_RENAMED){
 									marker.setAttribute(IMarker.MESSAGE, delta.getFullPath()
 											+ " has been renamed to " + delta.getMovedToPath());
+									marker.setAttribute("DeltaMovedToPath", delta.getMovedToPath().toString());
+									marker.setAttribute("FileName", delta.getMovedToPath().toFile().getName().toString());
+									marker.setAttribute("IssueType", "Rename");
 								}else 
 									if(issueType == ARTIFACT_MOVED){
 										marker.setAttribute(IMarker.MESSAGE, delta.getResource()
 												.getName() + " has been moved from " + delta.getFullPath()
 												+ " to " + delta.getMovedToPath());
+										marker.setAttribute("DeltaMovedToPath", delta.getMovedToPath().toString());
+										marker.setAttribute("FileName", delta.getMovedToPath().toFile().getName().toString());
+										marker.setAttribute("IssueType", "Move");
 									}else
 										if(issueType == ARTIFACT_DELETED){
 											marker.setAttribute(IMarker.MESSAGE, delta.getResource()
 													.getName() + " has been deleted from " + delta.getFullPath());
+											marker.setAttribute("IssueType", "Delete");
 										}
+								marker.setAttribute("DeltaFullPath", delta.getFullPath().toString());
+								
 								marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
 							}
 						}
