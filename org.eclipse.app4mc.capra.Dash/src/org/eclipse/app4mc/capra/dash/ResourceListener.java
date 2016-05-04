@@ -93,8 +93,8 @@ public class ResourceListener implements IResourceChangeListener{
 					IFile file = ResourcesPlugin.getWorkspace().getRoot().getFile(path);
 					EList<ArtifactWrapper> list = awc.get().getArtifacts();
 					for (ArtifactWrapper aw : list) {
-
-						if(aw.getName().equals(delta.getResource().getName())){
+						System.out.println(aw.getUri().toString() + " fuck " + delta.getResource().getFullPath().toString());
+						if(aw.getUri().toString().equals(delta.getResource().getFullPath().toString())){
 
 							IMarker marker = file.createMarker("org.eclipse.app4mc.capra.Dash.mytracemarker");
 
