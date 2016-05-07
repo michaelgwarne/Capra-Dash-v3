@@ -19,7 +19,7 @@ public class MarkerResolutionGenerator implements IMarkerResolutionGenerator {
 			String problem = (String) marker.getAttribute("IssueType");
 			if(problem.equals("Rename")){
 				return new IMarkerResolution[] {
-						new DummyNameOnlyQuickFix("Update Name in the wrapper model."),
+						new DummyNameOnlyQuickFix("Update only Name in the wrapper model."),
 						new RenameOrMoveQuickFix("Update Name and URI in the wrapper model."),
 						new DummyURIOnlyQuickFix("Update URI in the wrapper model."),
 				};}

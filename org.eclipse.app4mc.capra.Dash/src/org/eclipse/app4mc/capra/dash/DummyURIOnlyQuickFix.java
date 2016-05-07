@@ -69,7 +69,7 @@ public class DummyURIOnlyQuickFix implements IMarkerResolution {
 				counter ++;
 				if(aw.getUri().toString().equals(fullPath)){
 					art.setArtifactHandler(aw.getArtifactHandler());
-				//	art.setName(fileName);
+					art.setName(aw.getName());
 					art.setUri(movedToPath);
 					break;
 				}												
