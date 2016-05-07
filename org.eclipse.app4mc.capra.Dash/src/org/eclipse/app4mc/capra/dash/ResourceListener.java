@@ -45,7 +45,6 @@ public class ResourceListener implements IResourceChangeListener{
 	private ResourceSet resourceSet;
 	private Optional<EObject> tracemodel;
 	private Optional<ArtifactWrapperContainer> awc;
-
 	@Override
 	public void resourceChanged(IResourceChangeEvent event) {
 
